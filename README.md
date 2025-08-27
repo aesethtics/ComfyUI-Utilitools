@@ -30,8 +30,8 @@ These aren't the most sophisticated nodes out there, but they get the job done f
 
 ### ⚙️ Workflow Helpers
 - **Passthrough** - For workflow organization (does nothing, just passes data through)
-- **Show Whatever** - Display any value for debugging (accepts any input, shows in UI)
 - **Counter** - Increment/decrement with optional reset
+- **Date Timestamp** - Generate formatted date/time strings with toggles for components
 - **Constants** - Int, Float, and String constant value nodes
 
 ### 🖼️ Image Utilities
