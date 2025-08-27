@@ -62,15 +62,33 @@ class UtilShowWhatever:
     OUTPUT_NODE = True
 
     def show(self, input, label="Value"):
-        value_str = str(input)
+        # Format the value for display
         if hasattr(input, 'shape'):
             value_str = f"Tensor{input.shape} dtype={input.dtype}"
+            if input.numel() <= 10:  # Show small tensors
+                value_str += f" = {input.flatten().tolist()}"
         elif isinstance(input, (list, tuple)):
-            value_str = f"{type(input).__name__}[{len(input)}] = {str(input)[:100]}..."
+            if len(input) <= 10:
+                value_str = f"{type(input).__name__} = {input}"
+            else:
+                value_str = f"{type(input).__name__}[{len(input)}] = {str(input)[:100]}..."
         elif isinstance(input, dict):
-            value_str = f"Dict with {len(input)} keys: {list(input.keys())[:5]}..."
+            if len(input) <= 5:
+                value_str = f"Dict = {input}"
+            else:
+                value_str = f"Dict with {len(input)} keys: {list(input.keys())[:5]}..."
+        elif isinstance(input, str):
+            if len(input) <= 100:
+                value_str = f'"{input}"'
+            else:
+                value_str = f'"{input[:100]}..."'
+        else:
+            value_str = str(input)
         
+        # Print to console for debugging
         print(f"🔍 {label}: {value_str}")
+        
+        # Return for UI display
         return {"ui": {"text": [f"{label}: {value_str}"]}, "result": (input,)}
 
 
