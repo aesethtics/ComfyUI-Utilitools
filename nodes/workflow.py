@@ -43,12 +43,45 @@ class UtilCounter:
         return (self.counter,)
 
 
+class UtilShowWhatever:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "input": ("*",),
+            },
+            "optional": {
+                "label": ("STRING", {"default": "Value"}),
+            }
+        }
+
+    RETURN_TYPES = ("*",)
+    RETURN_NAMES = ("output",)
+    FUNCTION = "show"
+    CATEGORY = "Utilitools/Workflow"
+    OUTPUT_NODE = True
+
+    def show(self, input, label="Value"):
+        value_str = str(input)
+        if hasattr(input, 'shape'):
+            value_str = f"Tensor{input.shape} dtype={input.dtype}"
+        elif isinstance(input, (list, tuple)):
+            value_str = f"{type(input).__name__}[{len(input)}] = {str(input)[:100]}..."
+        elif isinstance(input, dict):
+            value_str = f"Dict with {len(input)} keys: {list(input.keys())[:5]}..."
+        
+        print(f"🔍 {label}: {value_str}")
+        return {"ui": {"text": [f"{label}: {value_str}"]}, "result": (input,)}
+
+
 NODE_CLASS_MAPPINGS = {
     "UtilPassthrough": UtilPassthrough,
     "UtilCounter": UtilCounter,
+    "UtilShowWhatever": UtilShowWhatever,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "UtilPassthrough": "Passthrough",
     "UtilCounter": "Counter",
+    "UtilShowWhatever": "Show Whatever",
 }
