@@ -49,19 +49,15 @@ class UtilShowWhatever:
         return {
             "required": {
                 "input": ("*",),
-            },
-            "optional": {
-                "label": ("STRING", {"default": "Value"}),
             }
         }
 
-    RETURN_TYPES = ("*",)
-    RETURN_NAMES = ("output",)
+    RETURN_TYPES = ()
     FUNCTION = "show"
     CATEGORY = "Utilitools/Workflow"
     OUTPUT_NODE = True
 
-    def show(self, input, label="Value"):
+    def show(self, input):
         # Format the value for display
         if hasattr(input, 'shape'):
             value_str = f"Tensor{input.shape} dtype={input.dtype}"
@@ -78,18 +74,18 @@ class UtilShowWhatever:
             else:
                 value_str = f"Dict with {len(input)} keys: {list(input.keys())[:5]}..."
         elif isinstance(input, str):
-            if len(input) <= 100:
+            if len(input) <= 200:
                 value_str = f'"{input}"'
             else:
-                value_str = f'"{input[:100]}..."'
+                value_str = f'"{input[:200]}..."'
         else:
             value_str = str(input)
         
         # Print to console for debugging
-        print(f"🔍 {label}: {value_str}")
+        print(f"🔍 Show Whatever: {value_str}")
         
-        # Return for UI display
-        return {"ui": {"text": [f"{label}: {value_str}"]}, "result": (input,)}
+        # Return for UI display in a text field
+        return {"ui": {"text": [value_str]}}
 
 
 NODE_CLASS_MAPPINGS = {
