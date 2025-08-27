@@ -1,8 +1,27 @@
 """
 Mathematical utility nodes for ComfyUI.
 
-Provides basic arithmetic operations with both integer and float outputs.
+Provides basic arithmetic operations that accept any input type and return int, float, and string outputs.
 """
+
+
+def _convert_to_number(value):
+    """Convert input to a numeric value, handling any input type."""
+    if isinstance(value, (int, float)):
+        return value
+    elif isinstance(value, str):
+        try:
+            if '.' not in value and 'e' not in value.lower():
+                return int(value)
+            else:
+                return float(value)
+        except ValueError:
+            return 0.0
+    else:
+        try:
+            return float(value)
+        except (ValueError, TypeError):
+            return 0.0
 
 
 class UtilAdd:
@@ -10,19 +29,21 @@ class UtilAdd:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "a": ("FLOAT", {"default": 0.0, "min": -999999.0, "max": 999999.0, "step": 0.001}),
-                "b": ("FLOAT", {"default": 0.0, "min": -999999.0, "max": 999999.0, "step": 0.001}),
+                "a": ("*",),
+                "b": ("*",),
             }
         }
 
-    RETURN_TYPES = ("INT", "FLOAT")
-    RETURN_NAMES = ("int_result", "float_result")
+    RETURN_TYPES = ("INT", "FLOAT", "STRING")
+    RETURN_NAMES = ("int_result", "float_result", "string_result")
     FUNCTION = "add"
     CATEGORY = "Utilitools/Math"
 
     def add(self, a, b):
-        result = a + b
-        return (int(result), float(result))
+        num_a = _convert_to_number(a)
+        num_b = _convert_to_number(b)
+        result = num_a + num_b
+        return (int(result), float(result), str(result))
 
 
 class UtilSubtract:
@@ -30,19 +51,21 @@ class UtilSubtract:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "a": ("FLOAT", {"default": 0.0, "min": -999999.0, "max": 999999.0, "step": 0.001}),
-                "b": ("FLOAT", {"default": 0.0, "min": -999999.0, "max": 999999.0, "step": 0.001}),
+                "a": ("*",),
+                "b": ("*",),
             }
         }
 
-    RETURN_TYPES = ("INT", "FLOAT")
-    RETURN_NAMES = ("int_result", "float_result")
+    RETURN_TYPES = ("INT", "FLOAT", "STRING")
+    RETURN_NAMES = ("int_result", "float_result", "string_result")
     FUNCTION = "subtract"
     CATEGORY = "Utilitools/Math"
 
     def subtract(self, a, b):
-        result = a - b
-        return (int(result), float(result))
+        num_a = _convert_to_number(a)
+        num_b = _convert_to_number(b)
+        result = num_a - num_b
+        return (int(result), float(result), str(result))
 
 
 class UtilMultiply:
@@ -50,19 +73,21 @@ class UtilMultiply:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "a": ("FLOAT", {"default": 1.0, "min": -999999.0, "max": 999999.0, "step": 0.001}),
-                "b": ("FLOAT", {"default": 1.0, "min": -999999.0, "max": 999999.0, "step": 0.001}),
+                "a": ("*",),
+                "b": ("*",),
             }
         }
 
-    RETURN_TYPES = ("INT", "FLOAT")
-    RETURN_NAMES = ("int_result", "float_result")
+    RETURN_TYPES = ("INT", "FLOAT", "STRING")
+    RETURN_NAMES = ("int_result", "float_result", "string_result")
     FUNCTION = "multiply"
     CATEGORY = "Utilitools/Math"
 
     def multiply(self, a, b):
-        result = a * b
-        return (int(result), float(result))
+        num_a = _convert_to_number(a)
+        num_b = _convert_to_number(b)
+        result = num_a * num_b
+        return (int(result), float(result), str(result))
 
 
 class UtilDivide:
@@ -70,21 +95,23 @@ class UtilDivide:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "a": ("FLOAT", {"default": 1.0, "min": -999999.0, "max": 999999.0, "step": 0.001}),
-                "b": ("FLOAT", {"default": 1.0, "min": -999999.0, "max": 999999.0, "step": 0.001}),
+                "a": ("*",),
+                "b": ("*",),
             }
         }
 
-    RETURN_TYPES = ("INT", "FLOAT")
-    RETURN_NAMES = ("int_result", "float_result")
+    RETURN_TYPES = ("INT", "FLOAT", "STRING")
+    RETURN_NAMES = ("int_result", "float_result", "string_result")
     FUNCTION = "divide"
     CATEGORY = "Utilitools/Math"
 
     def divide(self, a, b):
-        if b == 0:
-            return (0, 0.0)
-        result = a / b
-        return (int(result), float(result))
+        num_a = _convert_to_number(a)
+        num_b = _convert_to_number(b)
+        if num_b == 0:
+            return (0, 0.0, "0")
+        result = num_a / num_b
+        return (int(result), float(result), str(result))
 
 
 class UtilCalculator:
@@ -96,8 +123,8 @@ class UtilCalculator:
             }
         }
 
-    RETURN_TYPES = ("FLOAT", "INT")
-    RETURN_NAMES = ("float_result", "int_result")
+    RETURN_TYPES = ("INT", "FLOAT", "STRING")
+    RETURN_NAMES = ("int_result", "float_result", "string_result")
     FUNCTION = "calculate"
     CATEGORY = "Utilitools/Math"
 
@@ -106,11 +133,11 @@ class UtilCalculator:
             import re
             allowed_chars = re.compile(r'^[0-9+\-*/().\s]+$')
             if not allowed_chars.match(expression):
-                return (0.0, 0)
+                return (0, 0.0, "0")
             result = eval(expression)
-            return (float(result), int(result))
+            return (int(result), float(result), str(result))
         except:
-            return (0.0, 0)
+            return (0, 0.0, "0")
 
 
 NODE_CLASS_MAPPINGS = {
