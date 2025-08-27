@@ -47,8 +47,16 @@ class UtilShowWhatever:
     @classmethod
     def INPUT_TYPES(cls):
         return {
-            "required": {
-                "input": ("*",),
+            "required": {},
+            "optional": {
+                "int_input": ("INT", {}),
+                "float_input": ("FLOAT", {}),
+                "string_input": ("STRING", {}),
+                "image_input": ("IMAGE", {}),
+                "latent_input": ("LATENT", {}),
+                "conditioning_input": ("CONDITIONING", {}),
+                "model_input": ("MODEL", {}),
+                "vae_input": ("VAE", {}),
             }
         }
 
@@ -57,35 +65,48 @@ class UtilShowWhatever:
     CATEGORY = "Utilitools/Workflow"
     OUTPUT_NODE = True
 
-    def show(self, input):
-        # Format the value for display
-        if hasattr(input, 'shape'):
-            value_str = f"Tensor{input.shape} dtype={input.dtype}"
-            if input.numel() <= 10:  # Show small tensors
-                value_str += f" = {input.flatten().tolist()}"
-        elif isinstance(input, (list, tuple)):
-            if len(input) <= 10:
-                value_str = f"{type(input).__name__} = {input}"
-            else:
-                value_str = f"{type(input).__name__}[{len(input)}] = {str(input)[:100]}..."
-        elif isinstance(input, dict):
-            if len(input) <= 5:
-                value_str = f"Dict = {input}"
-            else:
-                value_str = f"Dict with {len(input)} keys: {list(input.keys())[:5]}..."
-        elif isinstance(input, str):
-            if len(input) <= 200:
-                value_str = f'"{input}"'
-            else:
-                value_str = f'"{input[:200]}..."'
+    def show(self, **kwargs):
+        # Find which input was connected
+        input_value = None
+        input_name = "None"
+        
+        for key, value in kwargs.items():
+            if value is not None:
+                input_value = value
+                input_name = key.replace("_input", "")
+                break
+        
+        if input_value is None:
+            value_str = "No input connected"
         else:
-            value_str = str(input)
+            # Format the value for display
+            if hasattr(input_value, 'shape'):
+                value_str = f"Tensor{input_value.shape} dtype={input_value.dtype}"
+                if input_value.numel() <= 10:  # Show small tensors
+                    value_str += f" = {input_value.flatten().tolist()}"
+            elif isinstance(input_value, (list, tuple)):
+                if len(input_value) <= 10:
+                    value_str = f"{type(input_value).__name__} = {input_value}"
+                else:
+                    value_str = f"{type(input_value).__name__}[{len(input_value)}] = {str(input_value)[:100]}..."
+            elif isinstance(input_value, dict):
+                if len(input_value) <= 5:
+                    value_str = f"Dict = {input_value}"
+                else:
+                    value_str = f"Dict with {len(input_value)} keys: {list(input_value.keys())[:5]}..."
+            elif isinstance(input_value, str):
+                if len(input_value) <= 200:
+                    value_str = f'"{input_value}"'
+                else:
+                    value_str = f'"{input_value[:200]}..."'
+            else:
+                value_str = str(input_value)
         
         # Print to console for debugging
-        print(f"🔍 Show Whatever: {value_str}")
+        print(f"Show Whatever ({input_name}): {value_str}")
         
         # Return for UI display in a text field
-        return {"ui": {"text": [value_str]}}
+        return {"ui": {"text": [f"{input_name.upper()}: {value_str}"]}}
 
 
 NODE_CLASS_MAPPINGS = {
