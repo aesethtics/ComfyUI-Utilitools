@@ -43,80 +43,80 @@ class UtilCounter:
         return (self.counter,)
 
 
-class UtilShowWhatever:
+class UtilDateTimestamp:
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {},
             "optional": {
-                "int_input": ("INT", {}),
-                "float_input": ("FLOAT", {}),
-                "string_input": ("STRING", {}),
-                "image_input": ("IMAGE", {}),
-                "latent_input": ("LATENT", {}),
-                "conditioning_input": ("CONDITIONING", {}),
-                "model_input": ("MODEL", {}),
-                "vae_input": ("VAE", {}),
+                "pre_text": ("STRING", {"default": ""}),
+                "include_year": ("BOOLEAN", {"default": True}),
+                "include_month": ("BOOLEAN", {"default": True}),
+                "include_day": ("BOOLEAN", {"default": True}),
+                "include_hour": ("BOOLEAN", {"default": False}),
+                "include_minute": ("BOOLEAN", {"default": False}),
+                "include_second": ("BOOLEAN", {"default": False}),
+                "post_text": ("STRING", {"default": ""}),
+                "separator": ("STRING", {"default": "-"}),
+                "time_separator": ("STRING", {"default": "-"}),
             }
         }
 
-    RETURN_TYPES = ()
-    FUNCTION = "show"
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("datetime_string",)
+    FUNCTION = "generate"
     CATEGORY = "Utilitools/Workflow"
-    OUTPUT_NODE = True
 
-    def show(self, **kwargs):
-        # Find which input was connected
-        input_value = None
-        input_name = "None"
+    def generate(self, pre_text="", include_year=True, include_month=True, include_day=True, 
+                 include_hour=False, include_minute=False, include_second=False,
+                 post_text="", separator="-", time_separator="-"):
+        from datetime import datetime
         
-        for key, value in kwargs.items():
-            if value is not None:
-                input_value = value
-                input_name = key.replace("_input", "")
-                break
+        now = datetime.now()
         
-        if input_value is None:
-            value_str = "No input connected"
+        # Build date parts
+        date_parts = []
+        if include_year:
+            date_parts.append(f"{now.year:04d}")
+        if include_month:
+            date_parts.append(f"{now.month:02d}")
+        if include_day:
+            date_parts.append(f"{now.day:02d}")
+        
+        # Build time parts
+        time_parts = []
+        if include_hour:
+            time_parts.append(f"{now.hour:02d}")
+        if include_minute:
+            time_parts.append(f"{now.minute:02d}")
+        if include_second:
+            time_parts.append(f"{now.second:02d}")
+        
+        # Combine parts
+        result_parts = []
+        if date_parts:
+            result_parts.append(separator.join(date_parts))
+        if time_parts:
+            result_parts.append(time_separator.join(time_parts))
+        
+        if not result_parts:
+            datetime_part = "timestamp"  # Fallback if nothing selected
         else:
-            # Format the value for display
-            if hasattr(input_value, 'shape'):
-                value_str = f"Tensor{input_value.shape} dtype={input_value.dtype}"
-                if input_value.numel() <= 10:  # Show small tensors
-                    value_str += f" = {input_value.flatten().tolist()}"
-            elif isinstance(input_value, (list, tuple)):
-                if len(input_value) <= 10:
-                    value_str = f"{type(input_value).__name__} = {input_value}"
-                else:
-                    value_str = f"{type(input_value).__name__}[{len(input_value)}] = {str(input_value)[:100]}..."
-            elif isinstance(input_value, dict):
-                if len(input_value) <= 5:
-                    value_str = f"Dict = {input_value}"
-                else:
-                    value_str = f"Dict with {len(input_value)} keys: {list(input_value.keys())[:5]}..."
-            elif isinstance(input_value, str):
-                if len(input_value) <= 200:
-                    value_str = f'"{input_value}"'
-                else:
-                    value_str = f'"{input_value[:200]}..."'
-            else:
-                value_str = str(input_value)
+            datetime_part = "_".join(result_parts) if len(result_parts) > 1 else result_parts[0]
         
-        # Print to console for debugging
-        print(f"Show Whatever ({input_name}): {value_str}")
-        
-        # Return for UI display in a text field
-        return {"ui": {"text": [f"{input_name.upper()}: {value_str}"]}}
+        # Combine pre_text + datetime + post_text
+        final_result = f"{pre_text}{datetime_part}{post_text}"
+        return (final_result,)
 
 
 NODE_CLASS_MAPPINGS = {
     "UtilPassthrough": UtilPassthrough,
     "UtilCounter": UtilCounter,
-    "UtilShowWhatever": UtilShowWhatever,
+    "UtilDateTimestamp": UtilDateTimestamp,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "UtilPassthrough": "Passthrough",
     "UtilCounter": "Counter",
-    "UtilShowWhatever": "Show Whatever",
+    "UtilDateTimestamp": "Date Timestamp",
 }
