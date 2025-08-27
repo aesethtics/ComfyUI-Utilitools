@@ -102,7 +102,7 @@ class UtilDateTimestamp:
         if not result_parts:
             datetime_part = "timestamp"  # Fallback if nothing selected
         else:
-            datetime_part = "_".join(result_parts) if len(result_parts) > 1 else result_parts[0]
+            datetime_part = separator.join(result_parts) if len(result_parts) > 1 else result_parts[0]
         
         # Combine pre_text + datetime + post_text
         final_result = f"{pre_text}{datetime_part}{post_text}"
